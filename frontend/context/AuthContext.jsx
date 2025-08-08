@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  //   login function to authenticate the user and socket connection
+  //   login function to authenticAate the user and socket connection
   const login = async (state, credentials) => {
     try {
       const { data } = await axios.post(`/api/auth/${state}`, credentials);
