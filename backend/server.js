@@ -56,7 +56,7 @@ app.use("/api/status", (req, res) => {
 app.use("/api/auth", userRouter);
 app.use("/api/messages", messageRouter);
 
-// connect to MongoDB
+// connect to MongoDb
 await connectDB();
 
 const PORT = process.env.PORT || 5001;
