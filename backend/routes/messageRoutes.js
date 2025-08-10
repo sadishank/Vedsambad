@@ -6,7 +6,7 @@ import {
   markMessageAsSeen,
   sendMessage,
 } from "../controllers/messageController.js";
-
+//mesg routes//
 const messageRouter = express.Router();
 
 messageRouter.get("/users", protectRoute, getUsersForSidebar);
