@@ -9,7 +9,7 @@ import { protectRoute } from "../middleware/auth.js";
 import { deleteAccount } from "../controllers/userController.js";
 
 const userRouter = express.Router();
-
+//user routes//
 userRouter.post("/signup", signUp);
 userRouter.post("/login", login);
 userRouter.put("/update-profile", protectRoute, updateProfile);
