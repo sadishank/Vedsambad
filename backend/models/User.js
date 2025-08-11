@@ -39,7 +39,7 @@ userSchema.pre("findOneAndDelete", async function (next) {
       // Extract public ID from Cloudinary URL
       const publicId = user.profilePic.split("/").pop().split(".")[0];
 
-      // Delete from Cloudinary
+      // Del from Cloudinary
       await cloudinary.uploader.destroy(publicId);
     }
     next();
