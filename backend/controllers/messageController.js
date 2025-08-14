@@ -9,4 +9,37 @@ const RightSidebar = () => {
 
   useEffect(() => {
     setMsgImages(messages.filter((msg) => msg.image).map((msg) => msg.image));
-  }, [messages]);
+  }, [messages]); return (
+    selectedUser && (
+      <div className="bg-[#8581B2]/10 text-white w-80 h-full relative overflow-y-scroll">
+        <div className="pt-16 flex flex-col items-center gap-2 text-xs font-light mx-auto">
+          <img
+            src={selectedUser?.profilePic || "./assets/images/avatarIcon.png"}
+            className="w-20 aspecr-[1/1] rounded-full"
+          />
+          <h1 className="px-10 font-medium text-xl mx-auto flex items-center gap-2">
+            {onlineUsers.includes(selectedUser._id) && (
+              <p className="w-3 h-3 rounded-full bg-green-400"></p>
+            )}
+            {selectedUser.fullName}
+          </h1>
+          <p className="px-10 mx-auto">{selectedUser.bio}</p>
+        </div>
+        <hr className="bg-[#ffffff50] my-4" />
+        <div className="px-5 text-xs">
+          <p>Media</p>
+          <div className="mt-2 max-h-[300px] overflow-y-scroll grid grid-cols-2 gap-4 opacity-80">
+            {msgImages.map((url, index) => (
+             import Message from "../models/Message.js";
+import User from "../models/User.js";
+import cloudinary from "../lib/cloudinary.js";
+import { io, userSocketMap } from "../server.js";
+
+// get all user except logged in user
+export const getUsersForSidebar = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const filteredUsers = await User.find({ _id: { $ne: userId } }).select(
+      "-password"
+    );
+
