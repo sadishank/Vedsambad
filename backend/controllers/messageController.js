@@ -42,4 +42,32 @@ export const getUsersForSidebar = async (req, res) => {
     const filteredUsers = await User.find({ _id: { $ne: userId } }).select(
       "-password"
     );
+ // count unseen messages for each user
+    const unseenMessages = {};
+    const promises = filteredUsers.map(async (user) => {
+      const messages = await Message.find({
+        senderId: user._id,
+        receiverId: userId,
+        seen: false,
+      });
+      if (messages.length > 0) {
+        unseenMessages[user._id] = messages.length;
+      }
+    });
+    await Promise.all(promises);
+    res.json({
+      success: true,
+      users: filteredUsers,
+      unseenMessages,
+    });
+  } catch (error) {
+    console.error("Error in getUsersForSidebar:", error.message); // Changed to console.error
+    res.status(500).json({
+      // Use 500 for server errors
+      success: false,
+      message: "Server error fetching users",
+      error: error.message,
+    });
+  }
+};
 
