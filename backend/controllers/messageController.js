@@ -70,4 +70,39 @@ export const getUsersForSidebar = async (req, res) => {
     });
   }
 };
+// get all messages fot selected user
+export const getMessages = async (req, res) => {
+  try {
+    const { id: selectedUserId } = req.params;
+    const myId = req.user._id;
+
+    const messages = await Message.find({
+      $or: [
+        { senderId: myId, receiverId: selectedUserId },
+        { senderId: selectedUserId, receiverId: myId },
+      ],
+    })
+      .populate("senderId", "fullName profilePic")
+      .sort({ createdAt: 1 });
+
+    await Message.updateMany(
+      { senderId: selectedUserId, receiverId: myId, seen: false },
+      { seen: true }
+    );
+    res.json({
+      success: true,
+      messages,
+    });
+  } catch (error) {
+    console.error("Error in getMessages:", error.message); // Changed to console.error
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Server error fetching messages",
+        error: error.message,
+      }); // Use 500
+  }
+};
+
 
