@@ -33,8 +33,7 @@ const ChatContainer = () => {
 
     setShouldAutoScroll(true);
   };
-
-  // handle sending an image
+  
   const handleSendImage = async (e) => {
     if (isSending) return;
     const file = e.target.files[0];
