@@ -1,0 +1,17 @@
+# -------frontend--------
+tailwindcss
+react-hot-toast
+socket.io-client
+react-router-dom
+axios
+
+# ------backend--------
+bcryptjs 
+cloudinary 
+cors 
+dotenv 
+express 
+jsonwebtoken 
+mongoose 
+socket.io    
+nodemon
