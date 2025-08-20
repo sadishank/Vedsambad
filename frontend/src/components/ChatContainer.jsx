@@ -46,4 +46,46 @@ const ChatContainer = () => {
       e.target.value = "";
     };
     reader.readAsDataURL(file);
-  };
+  }; useEffect(() => {
+    if (selectedUser) {
+      getMessages(selectedUser._id);
+    }
+  }, [selectedUser]);
+
+  useEffect(() => {
+    if (scrollEnd.current && messages) {
+      scrollEnd.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
+  return selectedUser ? (
+    <div className="h-full overflow-hidden relative backdrop-blur-lg flex">
+      {/* Main Chat Area */}
+      <div
+        className={`flex-1 flex flex-col h-full ${
+          showRightSidebar ? "max-md:w-full" : "w-full"
+        }`}
+      >
+        {/* ----------------header--------------- */}
+        <div className="flex items-center gap-3 py-3 mx-4 border-b border-stone-500">
+          <img
+            src={selectedUser.profilePic || "./assets/images/avatarIcon.png"}
+            alt=""
+            className="w-8 rounded-full"
+          />
+          <p className="flex-1 text-lg text-white flex items-center gap-2">
+            {selectedUser.fullName}
+            <span
+              className={`w-3 h-3 rounded-full ${
+                onlineUsers.includes(selectedUser._id)
+                  ? "bg-green-400"
+                  : "bg-red-500"
+              }`}
+            ></span>
+          </p>
+          <img
+            onClick={() => setSelectedUser(null)}
+            src="./assets/images/arrowIcon.png"
+            alt=""
+            className="md:hidden max-w-7 cursor-pointer"
+          />
