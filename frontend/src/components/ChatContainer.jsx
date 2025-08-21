@@ -206,5 +206,21 @@ const ChatContainer = () => {
                 ? "opacity-50 cursor-not-allowed"
                 : "cursor-pointer"
             }`}
-          >
+          ><img src="./assets/images/sendIcon.png" className="w-7" />
+          </button>
+        </div>
+      </div>
+
+      {/* Conditionally rendered RightSidebar */}
+      {showRightSidebar && <RightSidebar />}
+    </div>
+  ) : (
+    <div className="flex flex-col items-center justify-center gap-2 text-gray-500 bg-white/10 max-md:hidden">
+      <img src="./assets/images/logo.png" className="max-w-16" />
+      <p className="text-lg font=medium text-white"> Chat anytime, anywhere</p>
+    </div>
+  );
+};
+
+
 
