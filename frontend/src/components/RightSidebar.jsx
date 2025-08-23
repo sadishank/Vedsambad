@@ -30,4 +30,25 @@ const RightSidebar = () => {
         <div className="px-5 text-xs">
           <p>Media</p>
           <div className="mt-2 max-h-[300px] overflow-y-scroll grid grid-cols-2 gap-4 opacity-80">
-            {msgImages.map((url, index) => (
+            {msgImages.map((url, index) => ( <div
+                key={index}
+                onClick={() => window.open(url)}
+                className="cursor-pointer rounded"
+              >
+                <img src={url} className="h-full rounded-md" />
+              </div>
+            ))}
+          </div>
+        </div>
+        <button
+          onClick={() => logout()}
+          className="absolute bottom-5 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-[#C0353A] to-[#24366A] text-white border-none text-sm font-light px-20 py-2 rounded-full cursor-pointer"
+        >
+          LogOut
+        </button>
+      </div>
+    )
+  );
+};
+
+export default RightSidebar;
