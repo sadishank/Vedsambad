@@ -129,6 +129,59 @@ export const markMessageAsSeen = async (req, res) => {
       }); // Use 500
   }
 };
+// send messages to the selected user
+export const sendMessage = async (req, res) => {
+  try {
+    const { text, image } = req.body;
+    const receiverId = req.params.id;
+    const senderId = req.user._id;
+
+    let imageUrl;
+    if (image) {
+      try {
+        const upload = await cloudinary.uploader.upload(image, {
+          folder: "chat_images", // Optional: Organize uploads in a specific folder
+          // You can add more options like quality, format, transformations here
+        });
+        imageUrl = upload.secure_url;
+      } catch (uploadError) {
+        console.error("Cloudinary Image Upload Failed:", uploadError); // More specific error message
+        return res.status(500).json({
+          success: false,
+          message: "Failed to upload image. Please try again later.",
+          error: uploadError.message, // Send back the error message for debugging
+        });
+      }
+    }
+
+    // Input validation: Ensure at least text or an image is provided
+    if (!text && !imageUrl) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot send empty message. Please provide text or an image.",
+      });
+    }
+
+    const newMessage = await Message.create({
+      senderId,
+      receiverId,
+      text,
+      image: imageUrl, // Will be undefined if no image was uploaded
+    });
+
+    const populatedMessage = await Message.findById(newMessage._id)
+      .populate("senderId", "fullName profilePic")
+      .lean(); // Use lean() for better performance
+
+    // Emit to both users
+    const receiverSocketId = userSocketMap[receiverId];
+    const senderSocketId = userSocketMap[senderId];
+
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", populatedMessage);
+    }
+
+
 
 
 
