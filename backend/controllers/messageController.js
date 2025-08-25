@@ -180,6 +180,28 @@ export const sendMessage = async (req, res) => {
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", populatedMessage);
     }
+     // Only emit to sender if they are not the receiver (to avoid duplicate display from socket and optimistic update)
+    // If the sender is also the receiver (e.g., sending a message to self for testing),
+    // the optimistic update already handled it, and the socket might cause a duplicate.
+    if (senderSocketId && senderId.toString() !== receiverId.toString()) {
+      io.to(senderSocketId).emit("newMessage", populatedMessage);
+    }
+
+    res.status(201).json({
+      // Use 201 Created for successful resource creation
+      success: true,
+      newMessage: populatedMessage,
+    });
+  } catch (error) {
+    console.error("Server Error in sendMessage:", error); // General server error
+    res.status(500).json({
+      success: false,
+      message: "An internal server error occurred while sending the message.",
+      error: error.message,
+    });
+  }
+};
+
 
 
 
