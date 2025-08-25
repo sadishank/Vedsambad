@@ -1,48 +1,15 @@
-import React, { useState, useEffect, useContext } from "react";
-import { ChatContext } from "../../context/ChatContext";
-import { AuthContext } from "../../context/AuthContext";
-
-const RightSidebar = () => {
-  const { selectedUser, messages } = useContext(ChatContext);
-  const { logout, onlineUsers } = useContext(AuthContext);
-  const [msgImages, setMsgImages] = useState([]);
-
-  useEffect(() => {
-    setMsgImages(messages.filter((msg) => msg.image).map((msg) => msg.image));
-  }, [messages]); return (
-    selectedUser && (
-      <div className="bg-[#8581B2]/10 text-white w-80 h-full relative overflow-y-scroll">
-        <div className="pt-16 flex flex-col items-center gap-2 text-xs font-light mx-auto">
-          <img
-            src={selectedUser?.profilePic || "./assets/images/avatarIcon.png"}
-            className="w-20 aspecr-[1/1] rounded-full"
-          />
-          <h1 className="px-10 font-medium text-xl mx-auto flex items-center gap-2">
-            {onlineUsers.includes(selectedUser._id) && (
-              <p className="w-3 h-3 rounded-full bg-green-400"></p>
-            )}
-            {selectedUser.fullName}
-          </h1>
-          <p className="px-10 mx-auto">{selectedUser.bio}</p>
-        </div>
-        <hr className="bg-[#ffffff50] my-4" />
-        <div className="px-5 text-xs">
-          <p>Media</p>
-          <div className="mt-2 max-h-[300px] overflow-y-scroll grid grid-cols-2 gap-4 opacity-80">
-            {msgImages.map((url, index) => (
-             import Message from "../models/Message.js";
+import Message from "../models/Message.js";
 import User from "../models/User.js";
 import cloudinary from "../lib/cloudinary.js";
 import { io, userSocketMap } from "../server.js";
 
-// get all user except logged in user
+// ✅ Get all users except logged in user
 export const getUsersForSidebar = async (req, res) => {
   try {
     const userId = req.user._id;
-    const filteredUsers = await User.find({ _id: { $ne: userId } }).select(
-      "-password"
-    );
- // count unseen messages for each user
+    const filteredUsers = await User.find({ _id: { $ne: userId } }).select("-password");
+
+    // count unseen messages for each user
     const unseenMessages = {};
     const promises = filteredUsers.map(async (user) => {
       const messages = await Message.find({
@@ -54,23 +21,25 @@ export const getUsersForSidebar = async (req, res) => {
         unseenMessages[user._id] = messages.length;
       }
     });
+
     await Promise.all(promises);
+
     res.json({
       success: true,
       users: filteredUsers,
       unseenMessages,
     });
   } catch (error) {
-    console.error("Error in getUsersForSidebar:", error.message); // Changed to console.error
+    console.error("Error in getUsersForSidebar:", error.message);
     res.status(500).json({
-      // Use 500 for server errors
       success: false,
       message: "Server error fetching users",
       error: error.message,
     });
   }
 };
-// get all messages fot selected user
+
+// ✅ Get all messages for selected user
 export const getMessages = async (req, res) => {
   try {
     const { id: selectedUserId } = req.params;
@@ -89,47 +58,46 @@ export const getMessages = async (req, res) => {
       { senderId: selectedUserId, receiverId: myId, seen: false },
       { seen: true }
     );
+
     res.json({
       success: true,
       messages,
     });
   } catch (error) {
-    console.error("Error in getMessages:", error.message); // Changed to console.error
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Server error fetching messages",
-        error: error.message,
-      }); // Use 500
+    console.error("Error in getMessages:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Server error fetching messages",
+      error: error.message,
+    });
   }
 };
-// api to mark message as seen
+
+// ✅ Mark message as seen
 export const markMessageAsSeen = async (req, res) => {
   try {
     const { id } = req.params;
     const message = await Message.findByIdAndUpdate(id, { seen: true });
+
     if (!message) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Message not found" });
+      return res.status(404).json({ success: false, message: "Message not found" });
     }
+
     res.json({
       success: true,
       message: "Message marked as seen",
     });
   } catch (error) {
-    console.error("Error in markMessageAsSeen:", error.message); // Changed to console.error
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Server error marking message as seen",
-        error: error.message,
-      }); // Use 500
+    console.error("Error in markMessageAsSeen:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Server error marking message as seen",
+      error: error.message,
+    });
   }
 };
-// send messages to the selected user
+
+// ✅ Send a new message
 export const sendMessage = async (req, res) => {
   try {
     const { text, image } = req.body;
@@ -140,21 +108,19 @@ export const sendMessage = async (req, res) => {
     if (image) {
       try {
         const upload = await cloudinary.uploader.upload(image, {
-          folder: "chat_images", // Optional: Organize uploads in a specific folder
-          // You can add more options like quality, format, transformations here
+          folder: "chat_images",
         });
         imageUrl = upload.secure_url;
       } catch (uploadError) {
-        console.error("Cloudinary Image Upload Failed:", uploadError); // More specific error message
+        console.error("Cloudinary Image Upload Failed:", uploadError);
         return res.status(500).json({
           success: false,
           message: "Failed to upload image. Please try again later.",
-          error: uploadError.message, // Send back the error message for debugging
+          error: uploadError.message,
         });
       }
     }
 
-    // Input validation: Ensure at least text or an image is provided
     if (!text && !imageUrl) {
       return res.status(400).json({
         success: false,
@@ -166,34 +132,32 @@ export const sendMessage = async (req, res) => {
       senderId,
       receiverId,
       text,
-      image: imageUrl, // Will be undefined if no image was uploaded
+      image: imageUrl,
     });
 
     const populatedMessage = await Message.findById(newMessage._id)
       .populate("senderId", "fullName profilePic")
-      .lean(); // Use lean() for better performance
+      .lean();
 
-    // Emit to both users
+    // Emit to receiver
     const receiverSocketId = userSocketMap[receiverId];
     const senderSocketId = userSocketMap[senderId];
 
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", populatedMessage);
     }
-     // Only emit to sender if they are not the receiver (to avoid duplicate display from socket and optimistic update)
-    // If the sender is also the receiver (e.g., sending a message to self for testing),
-    // the optimistic update already handled it, and the socket might cause a duplicate.
+
+    // Avoid double emit if sender == receiver
     if (senderSocketId && senderId.toString() !== receiverId.toString()) {
       io.to(senderSocketId).emit("newMessage", populatedMessage);
     }
 
     res.status(201).json({
-      // Use 201 Created for successful resource creation
       success: true,
       newMessage: populatedMessage,
     });
   } catch (error) {
-    console.error("Server Error in sendMessage:", error); // General server error
+    console.error("Server Error in sendMessage:", error);
     res.status(500).json({
       success: false,
       message: "An internal server error occurred while sending the message.",
@@ -201,9 +165,3 @@ export const sendMessage = async (req, res) => {
     });
   }
 };
-
-
-
-
-
-
