@@ -55,4 +55,51 @@ export const login = async (req, res) => {
     res.json({ success: false, message: "Server error", error: error.message });
   }
 };
+// controller to check if user is authenticated
+export const checkAuth = async (req, res) => {
+  res.json({
+    success: true,
+    user: req.user,
+  });
+};
+
+// controller to update user profile
+export const updateProfile = async (req, res) => {
+  try {
+    const { profilePic, bio, fullName } = req.body;
+    const userId = req.user._id;
+
+    // Always include all fields in update
+    const updateData = { bio, fullName };
+
+    if (profilePic) {
+      const upload = await cloudinary.uploader.upload(profilePic);
+      updateData.profilePic = upload.secure_url;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+    });
+
+    if (!updatedUser) {
+      return res.json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      user: updatedUser,
+      message: "Profile updated successfully",
+    });
+  } catch (error) {
+    console.error("Update error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
 
